@@ -12,7 +12,7 @@ from BRE import compute_thicknesses_unbewehrt
 
 # Load the Excel file and generate configurations
 def load_and_filter_data():
-    file_path = r"C:\Users\USER\Desktop\HIWi\week 10\Platformthicknessapp\Bearing Pressure rev30.xlsx"
+    file_path = "Bearing Pressure rev30.xlsx"
     sheet_name = "Data"
     data_sheet = pd.read_excel(file_path, sheet_name=sheet_name)
 
