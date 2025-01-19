@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 from difflib import get_close_matches
 from BRE import calculate_platform_thickness
 
@@ -28,18 +29,28 @@ def get_clay_soil_parameters():
 
 # Function to select machine from Excel
 def select_machine_from_excel(file_path, sheet_name):
+    if not os.path.exists(file_path):
+        st.error(f"File not found at: {file_path}")
+        return None, None
+    
+    # Load the Excel file
     data_sheet = pd.read_excel(file_path, sheet_name=sheet_name)
     machine_names = data_sheet.iloc[:, 0].dropna().unique().tolist()  # Assuming machine names are in the first column
     
+    # Ask the user to enter the machine name
     user_input = st.text_input("Enter machine name (or part of the name):").strip()
-    matches = get_close_matches(user_input, machine_names, n=5, cutoff=0.3)
     
-    if matches:
-        selected_machine = st.selectbox("Select the correct machine:", matches)
-        return selected_machine, data_sheet[data_sheet.iloc[:, 0] == selected_machine]
+    if user_input:  # Only proceed if the user has entered something
+        matches = get_close_matches(user_input, machine_names, n=5, cutoff=0.3)
+        
+        if matches:
+            selected_machine = st.selectbox("Select the correct machine:", matches)
+            return selected_machine, data_sheet[data_sheet.iloc[:, 0] == selected_machine]
+        else:
+            st.error("No matches found. Please try again.")
+            return None, None
     else:
-        st.error("No matches found. Please try again.")
-        return None, None
+        return None, None  # Return None if no input is provided
 
 # Function to get manual input
 def get_manual_input():
@@ -72,7 +83,7 @@ def main():
     
     if scenario_choice == "Machine Selection from Excel":
         # Scenario 1: Machine Selection from Excel
-        file_path = r"C:\Users\USER\Desktop\HIWi\week 1\Bearing Pressure rev30.xlsx"
+        file_path = "Bearing Pressure rev30.xlsx"  # Use relative path
         sheet_name = "Data"
         selected_machine, machine_data = select_machine_from_excel(file_path, sheet_name)
         
