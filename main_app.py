@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import os
 from difflib import get_close_matches
 from BRE import calculate_platform_thickness
@@ -159,7 +158,13 @@ def main():
                 
                 # Calculate platform thickness
                 thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k_values)
-                st.write(f"Machine: {selected_machine}, Mode: {mode}, Thicknesses: {thicknesses}")
+                for thickness, comment in thicknesses:
+                    # Round off the thickness to 2 decimal places
+                    thickness_rounded = round(thickness, 2)
+                    # Display the result with units and comment
+                    st.write(f"Machine: {selected_machine}, Mode: {mode}")
+                    st.write(f"Platform Thickness: {thickness_rounded} m")
+                    st.write(f"Comment: {comment}")
     
     elif scenario_choice == "Manual Input":
         # Scenario 2: Manual Input
@@ -178,7 +183,12 @@ def main():
         
         # Calculate platform thickness
         thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k_values)
-        st.write(f"Platform Thicknesses: {thicknesses}")
+        for thickness, comment in thicknesses:
+            # Round off the thickness to 2 decimal places
+            thickness_rounded = round(thickness, 2)
+            # Display the result with units and comment
+            st.write(f"Platform Thickness: {thickness_rounded} m")
+            st.write(f"Comment: {comment}")
 
 # Run the main function
 if __name__ == "__main__":
