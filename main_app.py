@@ -120,11 +120,12 @@ def main():
     
     # Select soil type
     soil_type = get_soil_type()
-    if soil_type == "clay":
-        platform_phi_k, subgrade_cu_k_values = get_clay_soil_parameters()
-    elif soil_type == "granular":
-        st.warning("Currently not accepting granular soil requests.")
+    if soil_type == "granular":
+        st.error("Currently not accepting granular soil requests.")
         return
+    
+    # Get soil parameters
+    platform_phi_k, subgrade_cu_k_values = get_clay_soil_parameters()
     
     # Select method
     method = st.selectbox("Select method:", ["EN16228", "EN16228 Simplified", "FPS", "Austrian"])
@@ -138,7 +139,8 @@ def main():
         if selected_machine is not None:
             st.write(f"Selected machine: {selected_machine}")
             
-            # Perform calculations for each mode
+            # Prepare results table
+            results = []
             for index, row in machine_data.iterrows():
                 mode = row["MODE"]
                 b = row["b"] / 1000  # Convert mm to meters
@@ -159,12 +161,20 @@ def main():
                 # Calculate platform thickness
                 thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k_values)
                 for thickness, comment in thicknesses:
-                    # Round off the thickness to 2 decimal places
-                    thickness_rounded = round(thickness, 2)
-                    # Display the result with units and comment
-                    st.write(f"Machine: {selected_machine}, Mode: {mode}")
-                    st.write(f"Platform Thickness: {thickness_rounded} m")
-                    st.write(f"Comment: {comment}")
+                    results.append({
+                        "Machine": selected_machine,
+                        "Mode": mode,
+                        "platform_phi_k": platform_phi_k[0],
+                        "subgrade_cu_k": subgrade_cu_k_values[0],
+                        "Thickness (m)": round(thickness, 2),
+                        "Comment": comment
+                    })
+            
+            # Display results in a table
+            if results:
+                st.dataframe(pd.DataFrame(results))
+            else:
+                st.write("No results to display.")
     
     elif scenario_choice == "Manual Input":
         # Scenario 2: Manual Input
@@ -183,12 +193,20 @@ def main():
         
         # Calculate platform thickness
         thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k_values)
+        results = []
         for thickness, comment in thicknesses:
-            # Round off the thickness to 2 decimal places
-            thickness_rounded = round(thickness, 2)
-            # Display the result with units and comment
-            st.write(f"Platform Thickness: {thickness_rounded} m")
-            st.write(f"Comment: {comment}")
+            results.append({
+                "platform_phi_k": platform_phi_k[0],
+                "subgrade_cu_k": subgrade_cu_k_values[0],
+                "Thickness (m)": round(thickness, 2),
+                "Comment": comment
+            })
+        
+        # Display results in a table
+        if results:
+            st.dataframe(pd.DataFrame(results))
+        else:
+            st.write("No results to display.")
 
 # Run the main function
 if __name__ == "__main__":
