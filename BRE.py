@@ -90,6 +90,10 @@ def calculate_platform_thickness(cfg, subgrade_cu_k_values):
     """
     thicknesses = []
     for subgrade_cu_k in subgrade_cu_k_values:
-        thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k, cfg)
-        thicknesses.append((thickness, comment))
+        for platform_phi_k in cfg['platform_phi_k']:
+            # Create a new config with a single platform_phi_k value
+            cfg_copy = cfg.copy()
+            cfg_copy['platform_phi_k'] = platform_phi_k
+            thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k, cfg_copy)
+            thicknesses.append((thickness, comment))
     return thicknesses
