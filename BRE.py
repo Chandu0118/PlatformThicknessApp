@@ -71,6 +71,9 @@ def compute_thicknesses_unbewehrt(subgrade_cu_k, cfg):
     D1 = np.sqrt(D1_numerator / D1_denominator) if D1_numerator > 0 else 0.3
     D1 = max(0.3, D1)
 
+    # Convert np.float64 to plain float
+    D1 = float(D1)
+
     # Check if D1 exceeds the maximum allowed thickness
     max_allowed_thickness = 1.5 * cfg['b']
     if D1 > max_allowed_thickness:
