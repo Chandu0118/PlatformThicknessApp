@@ -1,5 +1,4 @@
 import numpy as np
-from rich import print
 
 def compute_Nγ(platform_phi_k):
     """
