@@ -11,28 +11,28 @@ except ImportError:
     st.error("The 'openpyxl' library is required to read Excel files. Please install it by running: `pip install openpyxl`")
     st.stop()  # Stop the app if openpyxl is not installed
 
-# Function to select soil type
-def get_soil_type():
-    st.write("Select soil type:")
-    soil_type = st.radio("Soil Type", ["Clay", "Granular"])
-    return soil_type.lower()
-
-# Function to get clay soil parameters
-def get_clay_soil_parameters():
-    platform_phi_k = st.text_input("Enter platform_phi_k (or press Enter to use default range [40, 45, 50, 55]):").strip()
-    subgrade_cu_k_values = st.text_input("Enter subgrade_cu_k_values (or press Enter to use default range [20, 30, 40, 50, 60]):").strip()
+# Function to select soil type and properties
+def get_soil_details():
+    st.write("Is the soil cohesive or granular?")
+    soil_type = st.radio("Soil Type", ["Cohesive", "Granular"])
     
-    if not platform_phi_k:
+    if soil_type == "Granular":
+        st.error("Currently not accepting granular soil requests.")
+        return None, None
+    
+    st.write("Do you know the soil properties?")
+    know_properties = st.radio("Know Properties?", ["Yes", "No"])
+    
+    if know_properties == "Yes":
+        platform_phi_k = st.number_input("Enter platform_phi_k (degrees):", min_value=0.0)
+        subgrade_cu_k = st.number_input("Enter subgrade_cu_k (kPa):", min_value=0.0)
+        return [platform_phi_k], [subgrade_cu_k]
+    
+    else:
+        st.write("Using default ranges for platform_phi_k and subgrade_cu_k.")
         platform_phi_k = [40, 45, 50, 55]
-    else:
-        platform_phi_k = [int(platform_phi_k)]
-    
-    if not subgrade_cu_k_values:
-        subgrade_cu_k_values = list(range(20, 61, 10))
-    else:
-        subgrade_cu_k_values = [int(subgrade_cu_k_values)]
-    
-    return platform_phi_k, subgrade_cu_k_values
+        subgrade_cu_k = [20, 30, 40, 50, 60]
+        return platform_phi_k, subgrade_cu_k
 
 # Function to select machine from Excel
 def select_machine_from_excel(file_path, sheet_name, method):
@@ -43,170 +43,194 @@ def select_machine_from_excel(file_path, sheet_name, method):
     # Load the Excel file
     data_sheet = pd.read_excel(file_path, sheet_name=sheet_name)
     
-    # Define column indices based on the selected method
-    if method == "EN16228":
-        col_b = 12  # Column M (Index 12)
-        col_qu = 21  # Column V (Index 21)
-        col_L1 = 25  # Column Z (Index 25)
-    elif method == "EN16228 Simplified":
-        col_b = 12  # Column M (Index 12)
-        col_qu = 23  # Column W (Index 23)
-        col_L1 = 27  # Column AA (Index 27)
-    elif method == "FPS":
-        col_b = 12  # Column M (Index 12)
-        col_qu = 30  # Column AD (Index 30)
-        col_L1 = 34  # Column AH (Index 34)
-    elif method == "Austrian":
-        col_b = 12  # Column M (Index 12)
-        col_qu = 36  # Column AJ (Index 36)
-        col_L1 = 37  # Column AK (Index 37)
-    
-    # Extract relevant columns
-    relevant_data = data_sheet.iloc[:, [1, 2, col_b, col_qu, col_L1]].copy()  # Columns: Machine Name, MODE, b, qu, L1
-    relevant_data.columns = ['Machine', 'MODE', 'b', 'qu', 'L1']
-    
-    # Convert columns to numeric, coerce errors to NaN
-    relevant_data['b'] = pd.to_numeric(relevant_data['b'], errors='coerce')
-    relevant_data['qu'] = pd.to_numeric(relevant_data['qu'], errors='coerce')
-    relevant_data['L1'] = pd.to_numeric(relevant_data['L1'], errors='coerce')
-    
-    # Filter data
-    filtered_data = relevant_data[
-        (relevant_data['b'] >= 0) &
-        (relevant_data['qu'] >= 110) &
-        (relevant_data['L1'] >= 0) &
-        (relevant_data['L1'] <= 10000)
-    ].copy()
-    
-    # Drop rows with NaN values
-    filtered_data = filtered_data.dropna()
+    # Extract machine names from column `b` (index 1)
+    machine_names = data_sheet.iloc[:, 1].dropna().unique().tolist()
     
     # Ask the user to enter the machine name
-    machine_names = filtered_data['Machine'].dropna().unique().tolist()
     user_input = st.text_input("Enter machine name (or part of the name):").strip()
     
-    if user_input:  # Only proceed if the user has entered something
+    if user_input:
         matches = get_close_matches(user_input, machine_names, n=5, cutoff=0.3)
-        
         if matches:
             selected_machine = st.selectbox("Select the correct machine:", matches)
-            return selected_machine, filtered_data[filtered_data['Machine'] == selected_machine]
+            return selected_machine, data_sheet[data_sheet.iloc[:, 1] == selected_machine]
         else:
             st.error("No matches found. Please try again.")
             return None, None
-    else:
-        return None, None  # Return None if no input is provided
+    return None, None
 
 # Function to get manual input
 def get_manual_input():
-    machine_weight = st.number_input("Enter machine weight (kg):", min_value=0.0)
+    L1 = st.number_input("Enter L1 (mm):", min_value=0.0)
     b = st.number_input("Enter b (mm):", min_value=0.0)
     qu = st.number_input("Enter qu (kPa):", min_value=0.0)
-    L1 = st.number_input("Enter L1 (mm):", min_value=0.0)
-    
     return {
-        "machine_weight": machine_weight,
+        "L1": L1,
         "b": b,
-        "qu": qu,
-        "L1": L1
+        "qu": qu
     }
+
+# Function to get weight range input
+def get_weight_range():
+    min_weight = st.number_input("Min Weight (kg):", min_value=0.0)
+    max_weight = st.number_input("Max Weight (kg):", min_value=0.0)
+    return min_weight, max_weight
 
 # Main function
 def main():
     st.title("Platform Thickness Calculator")
     
     # Select scenario
-    scenario_choice = st.radio("Select scenario:", ["Machine Selection from Excel", "Manual Input"])
+    scenario_choice = st.radio("Select scenario:", ["Expert Mode", "Guided Mode"])
     
-    # Select soil type
-    soil_type = get_soil_type()
-    if soil_type == "granular":
-        st.error("Currently not accepting granular soil requests.")
-        return
-    
-    # Get soil parameters
-    platform_phi_k, subgrade_cu_k_values = get_clay_soil_parameters()
-    
-    # Select method
-    method = st.selectbox("Select method:", ["EN16228", "EN16228 Simplified", "FPS", "Austrian"])
-    
-    if scenario_choice == "Machine Selection from Excel":
-        # Scenario 1: Machine Selection from Excel
-        file_path = "Bearing Pressure rev30.xlsx"  # Use relative path
-        sheet_name = "Data"
-        selected_machine, machine_data = select_machine_from_excel(file_path, sheet_name, method)
+    if scenario_choice == "Expert Mode":
+        # Expert Mode: Direct input fields
+        inputs = get_manual_input()
+        platform_phi_k, subgrade_cu_k = get_soil_details()
         
-        if selected_machine is not None:
-            st.write(f"Selected machine: {selected_machine}")
+        if platform_phi_k and subgrade_cu_k:
+            cfg = {
+                "b": inputs["b"] / 1000,  # Convert mm to meters
+                "qu": inputs["qu"],
+                "L1": inputs["L1"] / 1000,  # Convert mm to meters
+                "platform_phi_k": platform_phi_k,
+                "platform_gamma_k": 20,
+                "gamma_BRECaseNoPlatform": 1.5,
+                "gamma_BRECasePlatform": 1.2
+            }
             
-            # Prepare results table
+            thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
             results = []
-            for index, row in machine_data.iterrows():
-                mode = row["MODE"]
-                b = row["b"] / 1000  # Convert mm to meters
-                qu = row["qu"]
-                L1 = row["L1"] / 1000  # Convert mm to meters
+            for thickness, comment in thicknesses:
+                results.append({
+                    "platform_phi_k": platform_phi_k[0],
+                    "subgrade_cu_k": subgrade_cu_k[0],
+                    "Thickness (m)": round(thickness, 2),
+                    "Comment": comment
+                })
+            
+            if results:
+                st.dataframe(pd.DataFrame(results))
+            else:
+                st.write("No results to display.")
+    
+    elif scenario_choice == "Guided Mode":
+        # Guided Mode: Step-by-step questions
+        st.write("Do you know the machine details?")
+        machine_details = st.radio("Machine Details", ["Yes", "No"])
+        
+        if machine_details == "No":
+            st.error("Please check the machine manual.")
+            return
+        
+        st.write("Select an option:")
+        option = st.radio("Options", ["Select Machine from Library", "Enter Machine Details Manually", "Provide Weight Range"])
+        
+        if option == "Select Machine from Library":
+            file_path = "Bearing Pressure rev30.xlsx"
+            sheet_name = "Data"
+            method = "EN16228"  # Default method
+            selected_machine, machine_data = select_machine_from_excel(file_path, sheet_name, method)
+            
+            if selected_machine:
+                st.write(f"Selected machine: {selected_machine}")
+                platform_phi_k, subgrade_cu_k = get_soil_details()
                 
-                # Prepare configuration
+                if platform_phi_k and subgrade_cu_k:
+                    results = []
+                    for index, row in machine_data.iterrows():
+                        mode = row["MODE"]
+                        b = row["b"] / 1000  # Convert mm to meters
+                        qu = row["qu"]
+                        L1 = row["L1"] / 1000  # Convert mm to meters
+                        
+                        cfg = {
+                            "b": b,
+                            "qu": qu,
+                            "L1": L1,
+                            "platform_phi_k": platform_phi_k[0],
+                            "platform_gamma_k": 20,
+                            "gamma_BRECaseNoPlatform": 1.5,
+                            "gamma_BRECasePlatform": 1.2
+                        }
+                        
+                        thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
+                        for thickness, comment in thicknesses:
+                            results.append({
+                                "Machine": selected_machine,
+                                "Mode": mode,
+                                "platform_phi_k": platform_phi_k[0],
+                                "subgrade_cu_k": subgrade_cu_k[0],
+                                "Thickness (m)": round(thickness, 2),
+                                "Comment": comment
+                            })
+                    
+                    if results:
+                        st.dataframe(pd.DataFrame(results))
+                    else:
+                        st.write("No results to display.")
+        
+        elif option == "Enter Machine Details Manually":
+            inputs = get_manual_input()
+            platform_phi_k, subgrade_cu_k = get_soil_details()
+            
+            if platform_phi_k and subgrade_cu_k:
                 cfg = {
-                    "b": b,
-                    "qu": qu,
-                    "L1": L1,
+                    "b": inputs["b"] / 1000,  # Convert mm to meters
+                    "qu": inputs["qu"],
+                    "L1": inputs["L1"] / 1000,  # Convert mm to meters
                     "platform_phi_k": platform_phi_k[0],
                     "platform_gamma_k": 20,
                     "gamma_BRECaseNoPlatform": 1.5,
                     "gamma_BRECasePlatform": 1.2
                 }
                 
-                # Calculate platform thickness
-                thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k_values)
+                thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
+                results = []
                 for thickness, comment in thicknesses:
                     results.append({
-                        "Machine": selected_machine,
-                        "Mode": mode,
                         "platform_phi_k": platform_phi_k[0],
-                        "subgrade_cu_k": subgrade_cu_k_values[0],
+                        "subgrade_cu_k": subgrade_cu_k[0],
                         "Thickness (m)": round(thickness, 2),
                         "Comment": comment
                     })
+                
+                if results:
+                    st.dataframe(pd.DataFrame(results))
+                else:
+                    st.write("No results to display.")
+        
+        elif option == "Provide Weight Range":
+            min_weight, max_weight = get_weight_range()
+            platform_phi_k, subgrade_cu_k = get_soil_details()
             
-            # Display results in a table
-            if results:
-                st.dataframe(pd.DataFrame(results))
-            else:
-                st.write("No results to display.")
-    
-    elif scenario_choice == "Manual Input":
-        # Scenario 2: Manual Input
-        inputs = get_manual_input()
-        
-        # Prepare configuration
-        cfg = {
-            "b": inputs["b"] / 1000,  # Convert mm to meters
-            "qu": inputs["qu"],
-            "L1": inputs["L1"] / 1000,  # Convert mm to meters
-            "platform_phi_k": platform_phi_k[0],
-            "platform_gamma_k": 20,
-            "gamma_BRECaseNoPlatform": 1.5,
-            "gamma_BRECasePlatform": 1.2
-        }
-        
-        # Calculate platform thickness
-        thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k_values)
-        results = []
-        for thickness, comment in thicknesses:
-            results.append({
-                "platform_phi_k": platform_phi_k[0],
-                "subgrade_cu_k": subgrade_cu_k_values[0],
-                "Thickness (m)": round(thickness, 2),
-                "Comment": comment
-            })
-        
-        # Display results in a table
-        if results:
-            st.dataframe(pd.DataFrame(results))
-        else:
-            st.write("No results to display.")
+            if platform_phi_k and subgrade_cu_k:
+                results = []
+                for weight in range(int(min_weight), int(max_weight) + 1, 2000):  # Every 2 tonnes
+                    cfg = {
+                        "b": 1000 / 1000,  # Example value, replace with actual logic
+                        "qu": 110,  # Example value, replace with actual logic
+                        "L1": 500 / 1000,  # Example value, replace with actual logic
+                        "platform_phi_k": platform_phi_k[0],
+                        "platform_gamma_k": 20,
+                        "gamma_BRECaseNoPlatform": 1.5,
+                        "gamma_BRECasePlatform": 1.2
+                    }
+                    
+                    thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
+                    for thickness, comment in thicknesses:
+                        results.append({
+                            "Weight (kg)": weight,
+                            "platform_phi_k": platform_phi_k[0],
+                            "subgrade_cu_k": subgrade_cu_k[0],
+                            "Thickness (m)": round(thickness, 2),
+                            "Comment": comment
+                        })
+                
+                if results:
+                    st.dataframe(pd.DataFrame(results))
+                else:
+                    st.write("No results to display.")
 
 # Run the main function
 if __name__ == "__main__":
