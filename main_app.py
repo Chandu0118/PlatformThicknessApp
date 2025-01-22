@@ -121,19 +121,19 @@ def main():
         platform_phi_k, subgrade_cu_k = get_soil_details()
         
         if platform_phi_k and subgrade_cu_k:
-            cfg = {
-                "b": inputs["b"] / 1000,  # Convert mm to meters
-                "qu": inputs["qu"],
-                "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                "platform_gamma_k": 20,
-                "gamma_BRECaseNoPlatform": 1.5,
-                "gamma_BRECasePlatform": 1.2
-            }
-            
             results = []
             for platform_phi_k_value in platform_phi_k:
                 for subgrade_cu_k_value in subgrade_cu_k:
-                    cfg['platform_phi_k'] = platform_phi_k_value  # Single value
+                    cfg = {
+                        "b": inputs["b"] / 1000,  # Convert mm to meters
+                        "qu": inputs["qu"],
+                        "L1": inputs["L1"] / 1000,  # Convert mm to meters
+                        "platform_phi_k": platform_phi_k_value,  # Single value
+                        "platform_gamma_k": 20,
+                        "gamma_BRECaseNoPlatform": 1.5,
+                        "gamma_BRECasePlatform": 1.2
+                    }
+                    
                     thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                     results.append({
                         "platform_phi_k": platform_phi_k_value,
@@ -176,18 +176,18 @@ def main():
                         qu = row["qu"]
                         L1 = row["L1"] / 1000  # Convert mm to meters
                         
-                        cfg = {
-                            "b": b,
-                            "qu": qu,
-                            "L1": L1,
-                            "platform_gamma_k": 20,
-                            "gamma_BRECaseNoPlatform": 1.5,
-                            "gamma_BRECasePlatform": 1.2
-                        }
-                        
                         for platform_phi_k_value in platform_phi_k:
                             for subgrade_cu_k_value in subgrade_cu_k:
-                                cfg['platform_phi_k'] = platform_phi_k_value  # Single value
+                                cfg = {
+                                    "b": b,
+                                    "qu": qu,
+                                    "L1": L1,
+                                    "platform_phi_k": platform_phi_k_value,  # Single value
+                                    "platform_gamma_k": 20,
+                                    "gamma_BRECaseNoPlatform": 1.5,
+                                    "gamma_BRECasePlatform": 1.2
+                                }
+                                
                                 thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                                 results.append({
                                     "Machine": selected_machine,
@@ -208,19 +208,19 @@ def main():
             platform_phi_k, subgrade_cu_k = get_soil_details()
             
             if platform_phi_k and subgrade_cu_k:
-                cfg = {
-                    "b": inputs["b"] / 1000,  # Convert mm to meters
-                    "qu": inputs["qu"],
-                    "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                    "platform_gamma_k": 20,
-                    "gamma_BRECaseNoPlatform": 1.5,
-                    "gamma_BRECasePlatform": 1.2
-                }
-                
                 results = []
                 for platform_phi_k_value in platform_phi_k:
                     for subgrade_cu_k_value in subgrade_cu_k:
-                        cfg['platform_phi_k'] = platform_phi_k_value  # Single value
+                        cfg = {
+                            "b": inputs["b"] / 1000,  # Convert mm to meters
+                            "qu": inputs["qu"],
+                            "L1": inputs["L1"] / 1000,  # Convert mm to meters
+                            "platform_phi_k": platform_phi_k_value,  # Single value
+                            "platform_gamma_k": 20,
+                            "gamma_BRECaseNoPlatform": 1.5,
+                            "gamma_BRECasePlatform": 1.2
+                        }
+                        
                         thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                         results.append({
                             "platform_phi_k": platform_phi_k_value,
@@ -246,18 +246,18 @@ def main():
                 results = []
                 for weight in range(int(min_weight), int(max_weight) + 1, 2000):  # Every 2 tonnes
                     qu = weight / (b * L1)  # Calculate qu based on weight
-                    cfg = {
-                        "b": b / 1000,  # Convert mm to meters
-                        "qu": qu,
-                        "L1": L1 / 1000,  # Convert mm to meters
-                        "platform_gamma_k": 20,
-                        "gamma_BRECaseNoPlatform": 1.5,
-                        "gamma_BRECasePlatform": 1.2
-                    }
-                    
                     for platform_phi_k_value in platform_phi_k:
                         for subgrade_cu_k_value in subgrade_cu_k:
-                            cfg['platform_phi_k'] = platform_phi_k_value  # Single value
+                            cfg = {
+                                "b": b / 1000,  # Convert mm to meters
+                                "qu": qu,
+                                "L1": L1 / 1000,  # Convert mm to meters
+                                "platform_phi_k": platform_phi_k_value,  # Single value
+                                "platform_gamma_k": 20,
+                                "gamma_BRECaseNoPlatform": 1.5,
+                                "gamma_BRECasePlatform": 1.2
+                            }
+                            
                             thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                             results.append({
                                 "Weight (kg)": weight,
