@@ -51,7 +51,7 @@ def get_soil_details():
         return platform_phi_k, subgrade_cu_k
 
 # Function to select machine from Excel
-def select_machine_from_excel(file_path, sheet_name):
+    def select_machine_from_excel(file_path, sheet_name):
     if not os.path.exists(file_path):
         st.error(f"File not found at: {file_path}")
         return None, None
