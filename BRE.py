@@ -16,6 +16,12 @@ def compute_thicknesses_unbewehrt(subgrade_cu_k, cfg):
     Compute the required platform thickness for a single configuration.
     Returns a tuple: (platform_thickness_in_meters, comment)
     """
+    # Ensure platform_phi_k is a list for iteration
+    platform_phi_k_values = [cfg['platform_phi_k']] if not isinstance(cfg['platform_phi_k'], list) else cfg['platform_phi_k']
+    
+    # Ensure subgrade_cu_k is a list for iteration
+    subgrade_cu_k_values = [subgrade_cu_k] if not isinstance(subgrade_cu_k, list) else subgrade_cu_k
+
     # Check if L1 is zero
     if cfg['L1'] == 0:
         return 0.0, "L1 (platform thickness) cannot be zero."
@@ -82,18 +88,3 @@ def compute_thicknesses_unbewehrt(subgrade_cu_k, cfg):
     # Default case: Platform thickness is within limits
     comment = "Platform thickness is within limits."
     return D1, comment
-
-def compute_thicknesses_unbewehrt(cfg, subgrade_cu_k_values):
-    """
-    Calculate platform thickness for a given configuration and subgrade_cu_k_values.
-    Returns a list of tuples: [(platform_thickness_in_meters, comment), ...]
-    """
-    thicknesses = []
-    for subgrade_cu_k in subgrade_cu_k_values:
-        for platform_phi_k in cfg['platform_phi_k']:
-            # Create a new config with a single platform_phi_k value
-            cfg_copy = cfg.copy()
-            cfg_copy['platform_phi_k'] = platform_phi_k
-            thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k, cfg_copy)
-            thicknesses.append((thickness, comment))
-    return thicknesses
