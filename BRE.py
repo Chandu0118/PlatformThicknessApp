@@ -83,7 +83,7 @@ def compute_thicknesses_unbewehrt(subgrade_cu_k, cfg):
     comment = "Platform thickness is within limits."
     return D1, comment
 
-def calculate_platform_thickness(cfg, subgrade_cu_k_values):
+def compute_thicknesses_unbewehrt(cfg, subgrade_cu_k_values):
     """
     Calculate platform thickness for a given configuration and subgrade_cu_k_values.
     Returns a list of tuples: [(platform_thickness_in_meters, comment), ...]
