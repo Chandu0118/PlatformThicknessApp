@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 from difflib import get_close_matches
-from BRE import calculate_platform_thickness
+from BRE import compute_thicknesses_unbewehrt
 
 # Check if openpyxl is installed
 try:
