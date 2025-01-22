@@ -212,7 +212,7 @@ def main():
                     "b": inputs["b"] / 1000,  # Convert mm to meters
                     "qu": inputs["qu"],
                     "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                    "platform_phi_k": platform_phi_k[0],
+                    "platform_phi_k": [platform_phi_k[0]],
                     "platform_gamma_k": 20,
                     "gamma_BRECaseNoPlatform": 1.5,
                     "gamma_BRECasePlatform": 1.2
