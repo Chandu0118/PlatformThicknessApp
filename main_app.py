@@ -27,7 +27,7 @@ def get_soil_details():
     if know_properties == "Yes":
         platform_phi_k = st.number_input("Enter platform_phi_k (degrees):", min_value=0.0)
         subgrade_cu_k = st.number_input("Enter subgrade_cu_k (kPa):", min_value=0.0)
-        return [platform_phi_k], [subgrade_cu_k]
+        return [platform_phi_k], [subgrade_cu_k]  # Ensure platform_phi_k is a list
     
     else:
         st.write("Choose soil property ranges:")
@@ -125,7 +125,7 @@ def main():
                 "b": inputs["b"] / 1000,  # Convert mm to meters
                 "qu": inputs["qu"],
                 "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                "platform_phi_k": platform_phi_k,
+                "platform_phi_k": platform_phi_k,  # Already a list
                 "platform_gamma_k": 20,
                 "gamma_BRECaseNoPlatform": 1.5,
                 "gamma_BRECasePlatform": 1.2
@@ -181,7 +181,7 @@ def main():
                             "b": b,
                             "qu": qu,
                             "L1": L1,
-                            "platform_phi_k": platform_phi_k,
+                            "platform_phi_k": platform_phi_k,  # Already a list
                             "platform_gamma_k": 20,
                             "gamma_BRECaseNoPlatform": 1.5,
                             "gamma_BRECasePlatform": 1.2
@@ -214,7 +214,7 @@ def main():
                     "b": inputs["b"] / 1000,  # Convert mm to meters
                     "qu": inputs["qu"],
                     "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                    "platform_phi_k": platform_phi_k,
+                    "platform_phi_k": platform_phi_k,  # Already a list
                     "platform_gamma_k": 20,
                     "gamma_BRECaseNoPlatform": 1.5,
                     "gamma_BRECasePlatform": 1.2
@@ -253,7 +253,7 @@ def main():
                         "b": b / 1000,  # Convert mm to meters
                         "qu": qu,
                         "L1": L1 / 1000,  # Convert mm to meters
-                        "platform_phi_k": platform_phi_k,
+                        "platform_phi_k": platform_phi_k,  # Already a list
                         "platform_gamma_k": 20,
                         "gamma_BRECaseNoPlatform": 1.5,
                         "gamma_BRECasePlatform": 1.2
