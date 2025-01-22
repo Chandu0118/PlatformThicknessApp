@@ -115,6 +115,8 @@ def main():
     # Select scenario
     scenario_choice = st.radio("Select scenario:", ["Expert Mode", "Guided Mode"])
     
+
+        
     if scenario_choice == "Expert Mode":
         # Expert Mode: Direct input fields
         inputs = get_manual_input()
@@ -122,32 +124,60 @@ def main():
         
         if platform_phi_k and subgrade_cu_k:
             results = []
-            # Ensure platform_phi_k and subgrade_cu_k are single values
-            platform_phi_k_value = platform_phi_k[0] if isinstance(platform_phi_k, list) else platform_phi_k
-            subgrade_cu_k_value = subgrade_cu_k[0] if isinstance(subgrade_cu_k, list) else subgrade_cu_k
             
-            cfg = {
-                "b": inputs["b"] / 1000,  # Convert mm to meters
-                "qu": inputs["qu"],
-                "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                "platform_phi_k": platform_phi_k_value,  # Single value
-                "platform_gamma_k": 20,
-                "gamma_BRECaseNoPlatform": 1.5,
-                "gamma_BRECasePlatform": 1.2
-            }
+            # Check if platform_phi_k and subgrade_cu_k are lists (ranges) or single values
+            is_range = isinstance(platform_phi_k, list) or isinstance(subgrade_cu_k, list)
             
-            thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
-            results.append({
-                "platform_phi_k": platform_phi_k_value,
-                "subgrade_cu_k": subgrade_cu_k_value,
-                "Thickness (m)": round(thickness, 2),
-                "Comment": comment
-            })
+            if is_range:
+                # Handle ranges (similar to Guided Mode)
+                for platform_phi_k_value in platform_phi_k:
+                    for subgrade_cu_k_value in subgrade_cu_k:
+                        cfg = {
+                            "b": inputs["b"] / 1000,  # Convert mm to meters
+                            "qu": inputs["qu"],
+                            "L1": inputs["L1"] / 1000,  # Convert mm to meters
+                            "platform_phi_k": platform_phi_k_value,  # Single value
+                            "platform_gamma_k": 20,
+                            "gamma_BRECaseNoPlatform": 1.5,
+                            "gamma_BRECasePlatform": 1.2
+                        }
+                        
+                        thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
+                        results.append({
+                            "platform_phi_k": platform_phi_k_value,
+                            "subgrade_cu_k": subgrade_cu_k_value,
+                            "Thickness (m)": round(thickness, 2),
+                            "Comment": comment
+                        })
+            else:
+                # Handle single values (user knows soil details)
+                platform_phi_k_value = platform_phi_k[0] if isinstance(platform_phi_k, list) else platform_phi_k
+                subgrade_cu_k_value = subgrade_cu_k[0] if isinstance(subgrade_cu_k, list) else subgrade_cu_k
+                
+                cfg = {
+                    "b": inputs["b"] / 1000,  # Convert mm to meters
+                    "qu": inputs["qu"],
+                    "L1": inputs["L1"] / 1000,  # Convert mm to meters
+                    "platform_phi_k": platform_phi_k_value,  # Single value
+                    "platform_gamma_k": 20,
+                    "gamma_BRECaseNoPlatform": 1.5,
+                    "gamma_BRECasePlatform": 1.2
+                }
+                
+                thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
+                results.append({
+                    "platform_phi_k": platform_phi_k_value,
+                    "subgrade_cu_k": subgrade_cu_k_value,
+                    "Thickness (m)": round(thickness, 2),
+                    "Comment": comment
+                })
             
             if results:
                 st.dataframe(pd.DataFrame(results))
             else:
                 st.write("No results to display.")
+            
+
     
     elif scenario_choice == "Guided Mode":
         # Guided Mode: Step-by-step questions
