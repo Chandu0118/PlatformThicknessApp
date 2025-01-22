@@ -125,7 +125,7 @@ def main():
                 "b": inputs["b"] / 1000,  # Convert mm to meters
                 "qu": inputs["qu"],
                 "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                "platform_phi_k": platform_phi_k,  # Already a list
+                "platform_phi_k": platform_phi_k,
                 "platform_gamma_k": 20,
                 "gamma_BRECaseNoPlatform": 1.5,
                 "gamma_BRECasePlatform": 1.2
@@ -181,22 +181,24 @@ def main():
                             "b": b,
                             "qu": qu,
                             "L1": L1,
-                            "platform_phi_k": [platform_phi_k[0]],  # Ensure it's a list
+                            "platform_phi_k": platform_phi_k,
                             "platform_gamma_k": 20,
                             "gamma_BRECaseNoPlatform": 1.5,
                             "gamma_BRECasePlatform": 1.2
                         }
                         
-                        thicknesses = compute_thicknesses_unbewehrt(cfg, subgrade_cu_k)
-                        for thickness, comment in thicknesses:
-                            results.append({
-                                "Machine": selected_machine,
-                                "Mode": mode,
-                                "platform_phi_k": platform_phi_k[0],
-                                "subgrade_cu_k": subgrade_cu_k[0],
-                                "Thickness (m)": round(thickness, 2),
-                                "Comment": comment
-                            })
+                        for platform_phi_k_value in platform_phi_k:
+                            for subgrade_cu_k_value in subgrade_cu_k:
+                                cfg['platform_phi_k'] = [platform_phi_k_value]  # Ensure it's a list
+                                thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
+                                results.append({
+                                    "Machine": selected_machine,
+                                    "Mode": mode,
+                                    "platform_phi_k": platform_phi_k_value,
+                                    "subgrade_cu_k": subgrade_cu_k_value,
+                                    "Thickness (m)": round(thickness, 2),
+                                    "Comment": comment
+                                })
                     
                     if results:
                         st.dataframe(pd.DataFrame(results))
@@ -212,21 +214,23 @@ def main():
                     "b": inputs["b"] / 1000,  # Convert mm to meters
                     "qu": inputs["qu"],
                     "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                    "platform_phi_k": [platform_phi_k[0]],  # Ensure it's a list
+                    "platform_phi_k": platform_phi_k,
                     "platform_gamma_k": 20,
                     "gamma_BRECaseNoPlatform": 1.5,
                     "gamma_BRECasePlatform": 1.2
                 }
                 
-                thicknesses = compute_thicknesses_unbewehrt(cfg, subgrade_cu_k)
                 results = []
-                for thickness, comment in thicknesses:
-                    results.append({
-                        "platform_phi_k": platform_phi_k[0],
-                        "subgrade_cu_k": subgrade_cu_k[0],
-                        "Thickness (m)": round(thickness, 2),
-                        "Comment": comment
-                    })
+                for platform_phi_k_value in platform_phi_k:
+                    for subgrade_cu_k_value in subgrade_cu_k:
+                        cfg['platform_phi_k'] = [platform_phi_k_value]  # Ensure it's a list
+                        thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
+                        results.append({
+                            "platform_phi_k": platform_phi_k_value,
+                            "subgrade_cu_k": subgrade_cu_k_value,
+                            "Thickness (m)": round(thickness, 2),
+                            "Comment": comment
+                        })
                 
                 if results:
                     st.dataframe(pd.DataFrame(results))
@@ -238,27 +242,34 @@ def main():
             platform_phi_k, subgrade_cu_k = get_soil_details()
             
             if platform_phi_k and subgrade_cu_k:
+                st.write("Enter platform dimensions:")
+                L1 = st.number_input("Enter L1 (mm):", min_value=0.0)
+                b = st.number_input("Enter b (mm):", min_value=0.0)
+                
                 results = []
                 for weight in range(int(min_weight), int(max_weight) + 1, 2000):  # Every 2 tonnes
+                    qu = weight / (b * L1)  # Calculate qu based on weight
                     cfg = {
-                        "b": 1000 / 1000,  # Example value, replace with actual logic
-                        "qu": 110,  # Example value, replace with actual logic
-                        "L1": 500 / 1000,  # Example value, replace with actual logic
-                        "platform_phi_k": [platform_phi_k[0]],  # Ensure it's a list
+                        "b": b / 1000,  # Convert mm to meters
+                        "qu": qu,
+                        "L1": L1 / 1000,  # Convert mm to meters
+                        "platform_phi_k": platform_phi_k,
                         "platform_gamma_k": 20,
                         "gamma_BRECaseNoPlatform": 1.5,
                         "gamma_BRECasePlatform": 1.2
                     }
                     
-                    thicknesses = compute_thicknesses_unbewehrt(cfg, subgrade_cu_k)
-                    for thickness, comment in thicknesses:
-                        results.append({
-                            "Weight (kg)": weight,
-                            "platform_phi_k": platform_phi_k[0],
-                            "subgrade_cu_k": subgrade_cu_k[0],
-                            "Thickness (m)": round(thickness, 2),
-                            "Comment": comment
-                        })
+                    for platform_phi_k_value in platform_phi_k:
+                        for subgrade_cu_k_value in subgrade_cu_k:
+                            cfg['platform_phi_k'] = [platform_phi_k_value]  # Ensure it's a list
+                            thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
+                            results.append({
+                                "Weight (kg)": weight,
+                                "platform_phi_k": platform_phi_k_value,
+                                "subgrade_cu_k": subgrade_cu_k_value,
+                                "Thickness (m)": round(thickness, 2),
+                                "Comment": comment
+                            })
                 
                 if results:
                     st.dataframe(pd.DataFrame(results))
