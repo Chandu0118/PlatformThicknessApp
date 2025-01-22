@@ -72,6 +72,9 @@ def select_machine_from_excel(file_path, sheet_name):
     elif method == "Austrian":
         relevant_data = data_sheet.iloc[:, [2, 12, 36, 37]].copy()  # Austrian
     
+    # Rename columns for clarity
+    relevant_data.columns = ['MODE', 'b', 'qu', 'L1']
+    
     # Extract machine names from column `B` (index 1)
     machine_names = data_sheet.iloc[:, 1].dropna().unique().tolist()
     
@@ -82,12 +85,12 @@ def select_machine_from_excel(file_path, sheet_name):
         matches = get_close_matches(user_input, machine_names, n=5, cutoff=0.3)
         if matches:
             selected_machine = st.selectbox("Select the correct machine:", matches)
-            return selected_machine, data_sheet[data_sheet.iloc[:, 1] == selected_machine]
+            return selected_machine, relevant_data[data_sheet.iloc[:, 1] == selected_machine]
         else:
             st.error("No matches found. Please try again.")
             return None, None
     return None, None
-
+    
 # Function to get manual input
 def get_manual_input():
     L1 = st.number_input("Enter L1 (mm):", min_value=0.0)
