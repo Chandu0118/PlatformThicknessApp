@@ -125,7 +125,6 @@ def main():
                 "b": inputs["b"] / 1000,  # Convert mm to meters
                 "qu": inputs["qu"],
                 "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                "platform_phi_k": platform_phi_k,  # Already a list
                 "platform_gamma_k": 20,
                 "gamma_BRECaseNoPlatform": 1.5,
                 "gamma_BRECasePlatform": 1.2
@@ -134,7 +133,7 @@ def main():
             results = []
             for platform_phi_k_value in platform_phi_k:
                 for subgrade_cu_k_value in subgrade_cu_k:
-                    cfg['platform_phi_k'] = [platform_phi_k_value]  # Ensure it's a list
+                    cfg['platform_phi_k'] = platform_phi_k_value  # Single value
                     thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                     results.append({
                         "platform_phi_k": platform_phi_k_value,
@@ -181,7 +180,6 @@ def main():
                             "b": b,
                             "qu": qu,
                             "L1": L1,
-                            "platform_phi_k": platform_phi_k,  # Already a list
                             "platform_gamma_k": 20,
                             "gamma_BRECaseNoPlatform": 1.5,
                             "gamma_BRECasePlatform": 1.2
@@ -189,7 +187,7 @@ def main():
                         
                         for platform_phi_k_value in platform_phi_k:
                             for subgrade_cu_k_value in subgrade_cu_k:
-                                cfg['platform_phi_k'] = [platform_phi_k_value]  # Ensure it's a list
+                                cfg['platform_phi_k'] = platform_phi_k_value  # Single value
                                 thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                                 results.append({
                                     "Machine": selected_machine,
@@ -214,7 +212,6 @@ def main():
                     "b": inputs["b"] / 1000,  # Convert mm to meters
                     "qu": inputs["qu"],
                     "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                    "platform_phi_k": platform_phi_k,  # Already a list
                     "platform_gamma_k": 20,
                     "gamma_BRECaseNoPlatform": 1.5,
                     "gamma_BRECasePlatform": 1.2
@@ -223,7 +220,7 @@ def main():
                 results = []
                 for platform_phi_k_value in platform_phi_k:
                     for subgrade_cu_k_value in subgrade_cu_k:
-                        cfg['platform_phi_k'] = [platform_phi_k_value]  # Ensure it's a list
+                        cfg['platform_phi_k'] = platform_phi_k_value  # Single value
                         thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                         results.append({
                             "platform_phi_k": platform_phi_k_value,
@@ -253,7 +250,6 @@ def main():
                         "b": b / 1000,  # Convert mm to meters
                         "qu": qu,
                         "L1": L1 / 1000,  # Convert mm to meters
-                        "platform_phi_k": platform_phi_k,  # Already a list
                         "platform_gamma_k": 20,
                         "gamma_BRECaseNoPlatform": 1.5,
                         "gamma_BRECasePlatform": 1.2
@@ -261,7 +257,7 @@ def main():
                     
                     for platform_phi_k_value in platform_phi_k:
                         for subgrade_cu_k_value in subgrade_cu_k:
-                            cfg['platform_phi_k'] = [platform_phi_k_value]  # Ensure it's a list
+                            cfg['platform_phi_k'] = platform_phi_k_value  # Single value
                             thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
                             results.append({
                                 "Weight (kg)": weight,
