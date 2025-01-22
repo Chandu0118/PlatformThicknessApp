@@ -187,7 +187,7 @@ def main():
                             "gamma_BRECasePlatform": 1.2
                         }
                         
-                        thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
+                        thicknesses = compute_thicknesses_unbewehrt(cfg, subgrade_cu_k)
                         for thickness, comment in thicknesses:
                             results.append({
                                 "Machine": selected_machine,
@@ -218,7 +218,7 @@ def main():
                     "gamma_BRECasePlatform": 1.2
                 }
                 
-                thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
+                thicknesses = compute_thicknesses_unbewehrt(cfg, subgrade_cu_k)
                 results = []
                 for thickness, comment in thicknesses:
                     results.append({
@@ -250,7 +250,7 @@ def main():
                         "gamma_BRECasePlatform": 1.2
                     }
                     
-                    thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
+                    thicknesses = compute_thicknesses_unbewehrt(cfg, subgrade_cu_k)
                     for thickness, comment in thicknesses:
                         results.append({
                             "Weight (kg)": weight,
