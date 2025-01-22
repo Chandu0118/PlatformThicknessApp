@@ -192,7 +192,7 @@ def main():
                             results.append({
                                 "Machine": selected_machine,
                                 "Mode": mode,
-                                "platform_phi_k": platform_phi_k[0],
+                                "platform_phi_k": [platform_phi_k[0]],
                                 "subgrade_cu_k": subgrade_cu_k[0],
                                 "Thickness (m)": round(thickness, 2),
                                 "Comment": comment
@@ -212,7 +212,7 @@ def main():
                     "b": inputs["b"] / 1000,  # Convert mm to meters
                     "qu": inputs["qu"],
                     "L1": inputs["L1"] / 1000,  # Convert mm to meters
-                    "platform_phi_k": platform_phi_k[0],
+                    "platform_phi_k": [platform_phi_k[0]],
                     "platform_gamma_k": 20,
                     "gamma_BRECaseNoPlatform": 1.5,
                     "gamma_BRECasePlatform": 1.2
@@ -222,7 +222,7 @@ def main():
                 results = []
                 for thickness, comment in thicknesses:
                     results.append({
-                        "platform_phi_k": platform_phi_k[0],
+                        "platform_phi_k": [platform_phi_k[0]],
                         "subgrade_cu_k": subgrade_cu_k[0],
                         "Thickness (m)": round(thickness, 2),
                         "Comment": comment
