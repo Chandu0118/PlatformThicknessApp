@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import os
 from difflib import get_close_matches
 from BRE import calculate_platform_thickness
@@ -29,13 +30,28 @@ def get_soil_details():
         return [platform_phi_k], [subgrade_cu_k]
     
     else:
-        st.write("Using default ranges for platform_phi_k and subgrade_cu_k.")
-        platform_phi_k = [40, 45, 50, 55]
-        subgrade_cu_k = [20, 30, 40, 50, 60]
+        st.write("Choose soil property ranges:")
+        range_choice = st.radio("Range Choice", ["Default Ranges", "Custom Ranges"])
+        
+        if range_choice == "Default Ranges":
+            platform_phi_k = [40, 45, 50, 55]
+            subgrade_cu_k = [20, 30, 40, 50, 60]
+        else:
+            st.write("Enter custom ranges for platform_phi_k and subgrade_cu_k:")
+            platform_phi_k_min = st.number_input("Min platform_phi_k (degrees):", min_value=0.0)
+            platform_phi_k_max = st.number_input("Max platform_phi_k (degrees):", min_value=platform_phi_k_min)
+            platform_phi_k_step = st.number_input("Step for platform_phi_k (degrees):", min_value=1.0)
+            subgrade_cu_k_min = st.number_input("Min subgrade_cu_k (kPa):", min_value=0.0)
+            subgrade_cu_k_max = st.number_input("Max subgrade_cu_k (kPa):", min_value=subgrade_cu_k_min)
+            subgrade_cu_k_step = st.number_input("Step for subgrade_cu_k (kPa):", min_value=1.0)
+            
+            platform_phi_k = list(np.arange(platform_phi_k_min, platform_phi_k_max + 1, platform_phi_k_step))
+            subgrade_cu_k = list(np.arange(subgrade_cu_k_min, subgrade_cu_k_max + 1, subgrade_cu_k_step))
+        
         return platform_phi_k, subgrade_cu_k
 
 # Function to select machine from Excel
-def select_machine_from_excel(file_path, sheet_name, method):
+def select_machine_from_excel(file_path, sheet_name):
     if not os.path.exists(file_path):
         st.error(f"File not found at: {file_path}")
         return None, None
@@ -43,7 +59,20 @@ def select_machine_from_excel(file_path, sheet_name, method):
     # Load the Excel file
     data_sheet = pd.read_excel(file_path, sheet_name=sheet_name)
     
-    # Extract machine names from column `b` (index 1)
+    # Ask the user to select the calculation method
+    method = st.radio("Select Calculation Method:", ["EN16228", "EN16228 Simplified", "FPS", "Austrian"])
+    
+    # Extract relevant columns based on the selected method
+    if method == "EN16228":
+        relevant_data = data_sheet.iloc[:, [2, 12, 16, 20]].copy()  # EN16228
+    elif method == "EN16228 Simplified":
+        relevant_data = data_sheet.iloc[:, [2, 12, 23, 27]].copy()  # EN16228 Simplified
+    elif method == "FPS":
+        relevant_data = data_sheet.iloc[:, [2, 12, 30, 34]].copy()  # FPS
+    elif method == "Austrian":
+        relevant_data = data_sheet.iloc[:, [2, 12, 36, 37]].copy()  # Austrian
+    
+    # Extract machine names from column `B` (index 1)
     machine_names = data_sheet.iloc[:, 1].dropna().unique().tolist()
     
     # Ask the user to enter the machine name
@@ -99,15 +128,17 @@ def main():
                 "gamma_BRECasePlatform": 1.2
             }
             
-            thicknesses = calculate_platform_thickness(cfg, subgrade_cu_k)
             results = []
-            for thickness, comment in thicknesses:
-                results.append({
-                    "platform_phi_k": platform_phi_k[0],
-                    "subgrade_cu_k": subgrade_cu_k[0],
-                    "Thickness (m)": round(thickness, 2),
-                    "Comment": comment
-                })
+            for platform_phi_k_value in platform_phi_k:
+                for subgrade_cu_k_value in subgrade_cu_k:
+                    cfg['platform_phi_k'] = platform_phi_k_value
+                    thickness, comment = compute_thicknesses_unbewehrt(subgrade_cu_k_value, cfg)
+                    results.append({
+                        "platform_phi_k": platform_phi_k_value,
+                        "subgrade_cu_k": subgrade_cu_k_value,
+                        "Thickness (m)": round(thickness, 2),
+                        "Comment": comment
+                    })
             
             if results:
                 st.dataframe(pd.DataFrame(results))
@@ -129,8 +160,7 @@ def main():
         if option == "Select Machine from Library":
             file_path = "Bearing Pressure rev30.xlsx"
             sheet_name = "Data"
-            method = "EN16228"  # Default method
-            selected_machine, machine_data = select_machine_from_excel(file_path, sheet_name, method)
+            selected_machine, machine_data = select_machine_from_excel(file_path, sheet_name)
             
             if selected_machine:
                 st.write(f"Selected machine: {selected_machine}")
