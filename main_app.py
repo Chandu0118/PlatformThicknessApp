@@ -244,7 +244,7 @@ def main():
                         "b": 1000 / 1000,  # Example value, replace with actual logic
                         "qu": 110,  # Example value, replace with actual logic
                         "L1": 500 / 1000,  # Example value, replace with actual logic
-                        "platform_phi_k": platform_phi_k[0],
+                        "platform_phi_k": [platform_phi_k[0]],
                         "platform_gamma_k": 20,
                         "gamma_BRECaseNoPlatform": 1.5,
                         "gamma_BRECasePlatform": 1.2
@@ -254,7 +254,7 @@ def main():
                     for thickness, comment in thicknesses:
                         results.append({
                             "Weight (kg)": weight,
-                            "platform_phi_k": platform_phi_k[0],
+                            "platform_phi_k": [platform_phi_k[0]],
                             "subgrade_cu_k": subgrade_cu_k[0],
                             "Thickness (m)": round(thickness, 2),
                             "Comment": comment
